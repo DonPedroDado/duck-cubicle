@@ -25,7 +25,7 @@ node bin/duck-cubicle.js --help
 
 No dependencies, Node 18+.
 
-- **Try it without agents:** open `http://127.0.0.1:3300/?demo`.
+- **Try it without agents:** open `http://127.0.0.1:3300/?demo` (built-in actors), or run `npm run fake`: it starts the server plus six fake Claude Code sessions that send real hook events (errors, approvals, finishing), in a throwaway HOME so your own `~/.duck-cubicle` stays untouched. To feed fake sessions into a server you run yourself: `HOME=/some/dir node scripts/fake-hooks.js` with the server on the same HOME.
 - **Claude Code:** `node bin/duck-cubicle.js install-hooks` adds hooks to `~/.claude/settings.json` (it backs the file up first and leaves your own hooks alone; `uninstall-hooks` removes only ours). Restart your Claude Code sessions. Each session is an agent named after its folder; subagents get their own desk. The hook only records session id, folder, status and a short tool summary in `~/.duck-cubicle/claude-code.json`, and never touches the network.
 - **Any other agent system:** `--source FILE.json` or `--source http://…` with `{ "company": "…", "agents": [{ "id", "name", "role", "status", "task", "error" }] }`. Status is `running`, `waiting`, `idle`, `error` or `paused`.
 
@@ -50,6 +50,8 @@ All dialogue is in `public/lines.json`: insults, comebacks, causes of arguments,
 bin/duck-cubicle.js        server (serves public/, /api/feed, /api/appearance)
 bin/duck-cubicle-hook.js   Claude Code hook
 bin/install-hooks.js       install / uninstall the hook
+scripts/fake-hooks.js      fake Claude Code sessions for demos
+scripts/demo.js            server + fake sessions in a throwaway HOME (npm run fake)
 public/index.html          page and styles
 public/lines.json          everything they say
 public/js/core.js          layout, walking routes, censor, log, sound
