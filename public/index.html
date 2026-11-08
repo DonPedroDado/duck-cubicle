@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Duck Cubicle · a live pixel-art office where nobody is okay</title>
+<style>
+  :root { --bg:#171926; --panel:#222536; --line:#33374d; --text:#e9e7f2; --muted:#9a9bb3; --link:#9ec5ff; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:13px/1.45 system-ui, "Segoe UI", sans-serif; }
+  .wrap { max-width:1400px; margin:0 auto; padding:14px 16px 28px; }
+  header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+  h1 { font-size:17px; margin:0; letter-spacing:.2px; }
+  h1 small { color:var(--muted); font-weight:500; margin-left:8px; }
+  .right { position:relative; display:flex; align-items:center; gap:10px; color:var(--muted); }
+  select, input[type=text] { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:3px 6px; font:inherit; }
+  #main { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:12px; align-items:start; }
+  @media (max-width:980px) { #main { grid-template-columns:1fr; } }
+  #stage { position:relative; width:100%; aspect-ratio:352/208; border:2px solid var(--line); border-radius:8px; overflow:hidden; background:#2a2d3d; touch-action:none; cursor:grab; }
+  #stage.drag { cursor:grabbing; }
+  #world { position:absolute; inset:0; transform-origin:0 0; }
+  canvas { position:absolute; inset:0; width:100%; height:100%; image-rendering:pixelated; }
+  #labels { position:absolute; inset:0; pointer-events:none; font-size:11px; }
+  .lbl { position:absolute; transform:translate(-50%,-100%); display:flex; flex-direction:column; align-items:center; white-space:nowrap; }
+  .bub { background:#fff; color:#1d1f2b; border-radius:.82em; padding:.18em .64em; font-weight:600; margin-bottom:.27em; box-shadow:0 1px 0 rgba(0,0,0,.3); max-width:210px; overflow:hidden; text-overflow:ellipsis; pointer-events:auto; cursor:pointer; }
+  .bub.err { background:#ffdede; color:#8a1111; }
+  .bub.ok { background:#dcffe2; color:#145c24; }
+  .bub.wait { background:#fff1c9; color:#6b4d00; }
+  .bub.talk, .bub.yell, .bub.drunk, .bub.whisper { position:relative; overflow:visible; white-space:normal; width:max-content; text-align:center; line-height:1.25; }
+  .bub.talk::after, .bub.yell::after, .bub.drunk::after, .bub.whisper::after { content:''; position:absolute; left:50%; bottom:-.38em; margin-left:-.4em; border:.4em solid transparent; border-bottom:0; border-top-color:currentColor; }
+  .bub.talk::after { border-top-color:#fff; }
+  .bub.yell { background:#fff; color:#c0171d; font-weight:800; border:2px solid #c0171d; transform:rotate(-2deg); animation:shake .18s infinite; }
+  .bub.yell::after { border-top-color:#c0171d; }
+  .bub.drunk { background:#fbeeff; color:#6a2c91; transform:rotate(2deg); animation:sway 1.4s ease-in-out infinite; }
+  .bub.drunk::after { border-top-color:#fbeeff; }
+  .bub.whisper { background:#e9e7f2; color:#555; font-style:italic; font-weight:500; font-size:.88em; }
+  .bub.whisper::after { border-top-color:#e9e7f2; }
+  @keyframes shake { 0%{translate:0 0} 25%{translate:1px -1px} 50%{translate:-1px 1px} 75%{translate:1px 1px} 100%{translate:0 0} }
+  @keyframes sway { 0%,100%{rotate:-3deg} 50%{rotate:3deg} }
+  .name { background:rgba(15,16,26,.78); color:#fff; font-weight:600; padding:.09em .55em; border-radius:.45em; }
+  #banner { display:none; margin-bottom:10px; padding:8px 12px; border-radius:8px; background:#2b2f47; border:1px solid var(--line); color:var(--muted); }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:9px 11px; }
+  #log { max-height:220px; overflow:auto; font-size:12px; margin-bottom:8px; }
+  #log h3, #cards h3 { margin:0 0 6px; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600; }
+  #log .ev { padding:2px 0; border-top:1px solid var(--line); }
+  #log .ev:first-of-type { border-top:0; }
+  #log .ev time { color:var(--muted); margin-right:6px; font-size:11px; }
+  #log .ev.fight { color:#ffb3b8; } #log .ev.drink { color:#ffd98a; } #log .ev.gross { color:#b8e6a1; } #log .ev.gossip { color:#cbb8ff; }
+  #cards { display:grid; grid-template-columns:1fr; gap:8px; }
+  @media (max-width:980px) { #cards { grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); } }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:9px 11px; }
+  .card.sel { border-color:#ffe28a; }
+  .card .top { display:flex; align-items:center; gap:8px; }
+  .sw { width:12px; height:12px; border-radius:3px; flex:none; }
+  .card b { font-size:13px; }
+  .card .role { color:var(--muted); font-size:12px; }
+  .card .st { margin-top:4px; font-size:12px; }
+  .card .edit { margin-left:auto; background:none; border:0; color:var(--muted); cursor:pointer; font-size:13px; padding:0 2px; }
+  .card .edit:hover { color:var(--text); }
+  .meters { display:grid; grid-template-columns:auto 1fr; gap:2px 8px; margin-top:6px; font-size:11px; color:var(--muted); align-items:center; }
+  .meter { height:5px; background:#171926; border-radius:3px; overflow:hidden; }
+  .meter i { display:block; height:100%; border-radius:3px; }
+  .pill { display:inline-block; font-size:11px; padding:0 6px; border-radius:9px; margin-right:6px; }
+  .p-running { background:#1f5130; color:#9ff0b4; } .p-idle { background:#33374d; color:#c9cbe0; }
+  .p-error { background:#5a1f25; color:#ffb3b8; } .p-paused { background:#4d4221; color:#f3dc92; } .p-waiting { background:#5a4a12; color:#ffe08a; }
+  .navb, #gear { white-space:nowrap; background:none; border:1px solid var(--line); color:var(--muted); border-radius:6px; font:inherit; font-size:13px; line-height:1; padding:5px 8px; cursor:pointer; }
+  .navb:hover, #gear:hover, #gear[aria-expanded="true"] { color:var(--text); border-color:#4a4f6b; }
+  #nav { display:inline-flex; gap:6px; }
+  #settings { display:none; position:absolute; right:0; top:calc(100% + 6px); z-index:5; width:340px; max-width:calc(100vw - 24px); max-height:calc(100vh - 70px); overflow:auto; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:4px 12px 12px; box-shadow:0 8px 24px rgba(0,0,0,.35); color:var(--text); }
+  #settings.open { display:block; }
+  #settings .shead { font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:10px 0 6px; padding-top:8px; border-top:1px solid var(--line); }
+  #settings .shead:first-child { border-top:0; padding-top:4px; }
+  #settings .srow { display:grid; grid-template-columns:110px minmax(0,1fr); align-items:center; gap:8px; margin-bottom:6px; }
+  #settings .srow label { margin:0; font-size:12px; color:var(--muted); }
+  #settings select, #settings input[type=text] { width:100%; }
+  #settings .checks { display:flex; flex-wrap:wrap; gap:4px 14px; margin:2px 0 4px; }
+  .check { display:flex; align-items:center; gap:6px; color:var(--text); font-size:12px; }
+  #settings .sbtns { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  button.mini, dialog button { background:#2f3552; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:5px 6px; font:inherit; font-size:12px; cursor:pointer; }
+  button.mini:hover, dialog button:hover { border-color:#4a4f6b; }
+  button.danger { background:#5a2a2f; }
+  #settings .note { font-size:11px; color:var(--muted); margin-top:8px; }
+  dialog#looks { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:12px; padding:16px; width:min(640px, 94vw); box-shadow:0 18px 50px rgba(0,0,0,.5); }
+  dialog#looks::backdrop { background:rgba(8,9,15,.6); }
+  #looks h2 { font-size:15px; margin:0 0 12px; }
+  #looks .cols { display:grid; grid-template-columns:150px 1fr; gap:16px; }
+  #looks canvas { position:static; width:144px; height:192px; background:#363b51; border-radius:8px; image-rendering:pixelated; }
+  #looks .grid { display:grid; grid-template-columns:110px 1fr; gap:6px 8px; align-items:center; }
+  #looks label { color:var(--muted); font-size:12px; }
+  #looks input[type=range] { width:100%; }
+  #looks .foot { display:flex; justify-content:space-between; gap:8px; margin-top:14px; }
+  #looks .swatches { display:flex; gap:6px; }
+  #looks .swatches i { width:20px; height:20px; border-radius:4px; cursor:pointer; border:2px solid transparent; }
+  #looks .swatches i.on { border-color:#ffe28a; }
+  footer { margin-top:16px; color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Duck Cubicle <small id="company">Duck &amp; Co</small></h1>
+    <div class="right">
+      <span id="status">connecting…</span>
+      <span id="nav"><button class="navb" id="zin" title="Zoom in">+</button><button class="navb" id="zout" title="Zoom out">−</button><button class="navb" id="zreset" title="Reset view">⟲</button></span>
+      <button id="gear" aria-expanded="false" title="Settings">⚙</button>
+      <div id="settings">
+        <div class="shead">Chaos</div>
+        <div class="srow"><label for="s-chaos">Office mood</label>
+          <select id="s-chaos"><option value="0">0 · Calm (HR approved)</option><option value="1">1 · Realistic</option><option value="2">2 · Chaos</option><option value="3">3 · Pub brawl</option></select></div>
+        <div class="srow"><label for="s-lang">Language</label>
+          <select id="s-lang"><option value="raw">Uncensored</option><option value="bleep">Bleeped (f***)</option><option value="cartoon">Cartoon (#@%!)</option></select></div>
+        <div class="checks"><label class="check"><input type="checkbox" id="s-sound"> Sound effects</label></div>
+        <div class="sbtns">
+          <button class="mini" id="b-fight">Start a fight</button>
+          <button class="mini" id="b-happy">Happy hour</button>
+        </div>
+        <div class="shead">Display</div>
+        <div class="srow"><label for="s-fps">Frame rate</label>
+          <select id="s-fps"><option value="60">60 fps</option><option value="30">30 fps</option><option value="15">15 fps</option></select></div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="s-anim" checked> Animation</label>
+          <label class="check"><input type="checkbox" id="s-cards" checked> Cards</label>
+          <label class="check"><input type="checkbox" id="s-log" checked> Gossip log</label>
+        </div>
+        <div class="shead">Office</div>
+        <div class="srow"><label for="s-name">Name</label><input type="text" id="s-name" maxlength="30"></div>
+        <div class="sbtns">
+          <button class="mini" id="b-logo">Company logo…</button>
+          <button class="mini" id="b-logo-clear">Remove logo</button>
+          <button class="mini" id="b-export">Export appearance</button>
+          <button class="mini" id="b-import">Import appearance…</button>
+        </div>
+        <div class="note">Agents come from Claude Code hooks (<code>duck-cubicle install-hooks</code>) or a JSON feed. <code>?demo</code> shows a pretend office. Click an agent to follow them; ✎ on a card changes their looks and personality.</div>
+        <input type="file" id="f-logo" accept="image/*" hidden><input type="file" id="f-import" accept="application/json" hidden>
+      </div>
+    </div>
+  </header>
+  <div id="banner"></div>
+  <div id="main">
+    <div id="stage"><div id="world"><canvas id="c"></canvas><div id="labels"></div></div></div>
+    <aside>
+      <div id="log" class="panel"><h3>Office gossip</h3><div id="log-list"></div></div>
+      <div id="cards"></div>
+    </aside>
+  </div>
+  <footer>Duck Cubicle · MIT · a rowdier cousin of <a href="https://github.com/caglarutkuguler/cubicle" style="color:var(--link)">Cubicle</a>. Drinks are on the house; HR is not responsible.</footer>
+</div>
+
+<dialog id="looks"></dialog>
+
+<script src="js/core.js"></script>
+<script src="js/art.js"></script>
+<script src="js/chaos.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+{
+  "_readme": "Everything the agents say lives here. Edit freely. {name} = the person being talked to. 'bad' are regex stems the censor mode (bleeped / cartoon) hides.",
+  "bad": ["fuck\\w*", "shit\\w*", "bullshit", "asshole\\w*", "dumbass\\w*", "bastard\\w*", "bitch\\w*", "dick\\w*", "piss\\w*", "prick\\w*", "douche\\w*", "arse\\w*", "wanker\\w*", "motherfu\\w*"],
+
+  "swear_self": [
+    "Oh, FUCK me!", "Are you shitting me?!", "Piece of shit!", "WHY?! WHY?!",
+    "Fucking hell, not AGAIN!", "Motherfu—", "Kill me. Just kill me.",
+    "This is bullshit!", "Seriously?! SERIOUSLY?!", "I hate this fucking codebase.",
+    "Who wrote this crap?! ...oh. Me.", "Son of a bitch!", "Goddamn it!",
+    "But it works on my machine!!", "I swear to god...", "Shit shit shit shit shit"
+  ],
+
+  "insult": [
+    "You absolute dumbass!", "Are you brain-dead?!", "Shut your damn mouth, {name}!",
+    "Fuck off, {name}!", "You're a fucking disgrace, {name}.", "Learn to code, {name}!",
+    "Ever read the docs, you idiot?", "Your code smells like feet.", "Go cry to HR, loser.",
+    "Bite me, {name}!", "You're the reason we have bugs.", "You couldn't debug a paper bag.",
+    "Eat shit, {name}!", "Nobody likes you, {name}.", "You're a walking merge conflict."
+  ],
+
+  "comeback": [
+    "Oh, go fuck yourself!", "Says the guy who pushed to main!", "Your mother uses tabs!",
+    "Make me, asshole.", "Get bent!", "I've seen smarter toasters.", "At least I compile!",
+    "You wanna go?! COME ON!", "Say that to my face!", "Pfft. Amateur.",
+    "Your PR was trash and you know it.", "Kiss my ass, {name}.", "Stuff it, {name}!",
+    "Eat my shorts, {name}."
+  ],
+
+  "causes": [
+    { "a": "Can you type any LOUDER, {name}?!", "b": "Can you breathe any LOUDER?!" },
+    { "a": "Who stole my fucking mug?! {name}?!", "b": "It's a mug, not a kidney. Relax!" },
+    { "a": "This is YOUR fault, {name}!", "b": "MY fault?! You broke prod, dumbass!" },
+    { "a": "Where's my stapler, {name}?!", "b": "Never touched your goddamn stapler!" },
+    { "a": "Dude, your lunch STINKS.", "b": "It's called cooking, you philistine." },
+    { "a": "Turn that shit off, {name}!", "b": "It's a banger and you have no taste!" },
+    { "a": "You overwrote my commit, {name}!", "b": "Should've pulled first, genius." },
+    { "a": "Someone ate my sandwich. {name}!", "b": "Finders keepers, asshole." },
+    { "a": "That meeting could've been an email, {name}.", "b": "So could your entire personality." },
+    { "a": "Tabs?! You use TABS?!", "b": "Spaces are for cowards!" },
+    { "a": "You're sitting in my chair, {name}.", "b": "Chairs don't have names, Karen." },
+    { "a": "Stop breathing down my neck!", "b": "I'm just reading your terrible code." }
+  ],
+  "cause_blame": [
+    { "a": "That's {name}'s fault, not mine!", "b": "WHAT?! Say it to my face, you coward!" },
+    { "a": "{name} broke it! Ask {name}!", "b": "I touched NOTHING, you liar!" },
+    { "a": "Who pushed this garbage? {name}?!", "b": "Oh, you wanna blame ME now?!" }
+  ],
+  "cause_gossip": [
+    { "a": "I heard what you said about me, {name}!", "b": "Uh... it was a compliment?" },
+    { "a": "So I'm the 'useless one', {name}?!", "b": "Who told you that?! ...Okay, yes." }
+  ],
+
+  "spit": ["*PTOOEY*", "Eat THIS!", "Hock-ptui!", "Take that, asshole!", "*hhhk-PTUI*"],
+  "spit_react": [
+    "Ew! Did you just SPIT on me?!", "You SPAT on me?! Disgusting!",
+    "Oh hell no. OH HELL NO.", "My FACE! My beautiful face!", "That's it, you're DEAD."
+  ],
+  "spit_floor": ["*ptooey*", "*hhhk-ptui*", "*spits*"],
+  "floor_gross": ["Who spat on the floor?!", "Ew. Someone's a pig.", "Disgusting. Nobody's cleaning that."],
+
+  "shove": ["Outta my way!", "Move it!", "Back off!"],
+  "shove_react": ["Hey! Watch it!", "Oh, you wanna play?!", "OW! Asshole!", "Did you just PUSH me?!"],
+
+  "toast": ["Cheers!", "Salud!", "To not getting fired!", "Prost!", "Bottoms up!", "To production staying up!"],
+  "drink_solo": ["Needed that.", "Ahhh.", "Medicinal.", "It's 5 o'clock somewhere.", "One for the bugs.", "Beer o'clock."],
+  "burp": ["*BUUURP*", "*burp* 'scuse me.", "*HIC*"],
+  "drunk": [
+    "I looooove you guys...", "Shhh... I'm fine.", "*hic* who moved the floor?",
+    "I'm not drunk, YOU'RE drunk!", "I could rewrite everything. Tonight.", "Where's... where's my desk?",
+    "You're my best friend, you know that?", "Wanna hear a secret? The tests are fake.",
+    "I am the CEO now.", "*hic*", "Let's deploy on Friday!!", "Why is the room spinning..."
+  ],
+  "fall": ["Whoa— woooah!", "I'm fine! I'm fine!!", "The floor started it."],
+  "drop": ["Noooo! My beer!", "Ah, shit. Casualty.", "Five second rule!"],
+  "wake": ["Mmmph... what time is it?", "Who turned the lights on?", "I wasn't sleeping."],
+  "sneaky": ["...don't tell anyone.", "*glug* strictly for debugging.", "The rubber duck won't judge.", "Hair of the dog."],
+
+  "waiting": [
+    "Hello?? I'm WAITING here!", "Anyone there?!", "I need a human. NOW.",
+    "Do you even read these?!", "Approve it already, jeez!", "Today would be nice...", "*taps watch*"
+  ],
+  "waiting_finger": ["Fine. Ignore me. See if I care.", "...rude."],
+
+  "makeup": ["...Beer?", "Ah, screw it. Beer?", "We're cool. Mostly.", "Fine. You're not THAT bad.", "Drinks. My treat."],
+  "makeup_reply": ["...Yeah. Beer.", "Ugh. Fine.", "You're buying."],
+  "hr": ["I'm telling HR!", "That's it, I'm filing a ticket!", "I'll CC your manager!"],
+  "hr_reply": ["Do it, snitch!", "HR can kiss my ass!"],
+  "huff": ["I'm outta here!", "Whatever. WHATEVER.", "I don't need this shit.", "Going for a smoke."],
+
+  "gossip": [
+    "Did you see {name}'s code?", "Psst... {name} is drunk again.", "I heard {name} deployed on Friday.",
+    "{name} never washes their mug.", "Between us? {name} has no idea what they're doing.",
+    "{name} microwaves fish. FISH."
+  ],
+  "gossip_reply": ["No way!", "Shut up!", "Ha! Classic {name}.", "I knew it.", "Wow. Shocking. Not."],
+
+  "stretch": ["*yawn*", "*stretches*", "Need coffee..."]
+}
