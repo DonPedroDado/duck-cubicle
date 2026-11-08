@@ -21,7 +21,7 @@ const opt = (name, env, dflt) => {
   return i >= 0 && argv[i + 1] ? argv[i + 1] : process.env[env] || dflt;
 };
 if (argv.includes('--help') || argv.includes('-h')) {
-  console.log(`duck-cubicle [--port 3300] [--host 127.0.0.1] [--source claude-code|none|FILE.json|URL]
+  console.log(`duck-cubicle [--port 3300] [--host 127.0.0.1] [--source claude-code|none|FILE.json|URL] [--allow-origin https://dc.ducksoft.ai]
 duck-cubicle install-hooks     add the Claude Code hooks (backs up ~/.claude/settings.json)
 duck-cubicle uninstall-hooks   remove them again
 Open http://127.0.0.1:3300/?demo to see the office without any agents.`);
@@ -30,6 +30,8 @@ Open http://127.0.0.1:3300/?demo to see the office without any agents.`);
 const PORT = Number(opt('port', 'DUCK_PORT', 3300));
 const HOST = opt('host', 'DUCK_HOST', '127.0.0.1');
 const SOURCE = opt('source', 'DUCK_SOURCE', 'claude-code');
+// Hosted copies of the page (e.g. dc.ducksoft.ai) may read the feed from this machine, nothing else.
+const ALLOWED = (opt('allow-origin', 'DUCK_ALLOW_ORIGIN', 'https://dc.ducksoft.ai')).split(',').map((o) => o.trim()).filter(Boolean);
 const CLAUDE_STATE = path.join(HOME, 'claude-code.json');
 const APPEARANCE = path.join(HOME, 'appearance.json');
 
@@ -77,16 +79,21 @@ function localRequest(req) {
   return req.headers['x-duck'] === '1';
 }
 
-function send(res, code, body, type = 'application/json; charset=utf-8') {
-  res.writeHead(code, { 'content-type': type, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
+function send(res, code, body, type = 'application/json; charset=utf-8', extra = {}) {
+  res.writeHead(code, { 'content-type': type, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', ...extra });
   res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
 }
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   try {
-    if (url.pathname === '/api/feed' && req.method === 'GET') return send(res, 200, await feed());
-    if (url.pathname === '/api/health') return send(res, 200, { ok: true, source: SOURCE });
+    if (url.pathname === '/api/feed' || url.pathname === '/api/health') {
+      const o = req.headers.origin;
+      const cors = o && ALLOWED.includes(o) ? { 'access-control-allow-origin': o, vary: 'Origin' } : { vary: 'Origin' };
+      if (req.method === 'OPTIONS') return send(res, 204, '', 'text/plain', { ...cors, 'access-control-allow-methods': 'GET', 'access-control-allow-private-network': 'true', 'access-control-max-age': '600' });
+      if (req.method === 'GET' && url.pathname === '/api/feed') return send(res, 200, await feed(), undefined, cors);
+      if (url.pathname === '/api/health') return send(res, 200, { ok: true, source: SOURCE }, undefined, cors);
+    }
     if (url.pathname === '/api/appearance') {
       if (req.method === 'GET') return send(res, 200, readJson(APPEARANCE, { agents: {}, names: {} }));
       if (req.method === 'PUT') {

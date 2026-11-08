@@ -7,6 +7,10 @@
   const gctx = cv.getContext('2d');
   const params = new URLSearchParams(location.search);
   const DEMO = params.has('demo');
+  // Served from this machine: talk to ourselves. Served from the internet (dc.ducksoft.ai): talk to the visitor's own
+  // local bridge (npm i -g duck-cubicle), so their agents never leave their computer. ?bridge=PORT overrides the port.
+  const HOSTED = !['127.0.0.1', 'localhost', '[::1]', ''].includes(location.hostname);
+  const API = HOSTED ? 'http://127.0.0.1:' + (Number(params.get('bridge')) || 3300) : '';
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   let officeName = '';
 
@@ -17,7 +21,7 @@
   D.imageOf = (src) => { if (!src) return null; let im = images.get(src); if (!im) { im = new Image(); im.src = src; images.set(src, im); } return im.complete && im.naturalWidth ? im : null; };
   const normLooks = (d) => ({ agents: (d && d.agents) || {}, names: (d && d.names) || {}, ...(d && d.logo ? { logo: d.logo } : {}) });
   async function loadLooks() {
-    if (!DEMO) { try { const r = await fetch('/api/appearance', { cache: 'no-store' }); if (r.ok) { D.looks = normLooks(await r.json()); looksOnServer = true; return; } } catch (_) {} }
+    if (!DEMO && !HOSTED) { try { const r = await fetch('/api/appearance', { cache: 'no-store' }); if (r.ok) { D.looks = normLooks(await r.json()); looksOnServer = true; return; } } catch (_) {} }
     try { D.looks = normLooks(JSON.parse(localStorage.getItem(LOOK_KEY) || '{}')); } catch (_) {}
   }
   async function saveLooks() {
@@ -293,7 +297,7 @@
   async function poll() {
     const banner = $('banner');
     try {
-      const feed = DEMO ? demoFeed() : await (await fetch('/api/feed', { cache: 'no-store' })).json();
+      const feed = DEMO ? demoFeed() : await (await fetch(API + '/api/feed', { cache: 'no-store' })).json();
       officeName = D.settings.name || feed.company || 'Duck & Co';
       $('company').textContent = officeName;
       syncAgents(feed.agents || []);
@@ -301,7 +305,10 @@
       $('status').textContent = `${(feed.agents || []).length} agents · ${working} working · ${new Date().toLocaleTimeString()}`;
       if (!(feed.agents || []).length) { banner.style.display = 'block'; banner.innerHTML = 'Nobody is at work yet. Run <code>duck-cubicle install-hooks</code> and start a Claude Code session, or open <a href="?demo" style="color:var(--link)">?demo</a> for a pretend office.'; }
       else banner.style.display = 'none';
-    } catch (e) { $('status').textContent = 'server not reachable'; }
+    } catch (e) {
+      $('status').textContent = HOSTED ? 'no local bridge found' : 'server not reachable';
+      if (HOSTED) { banner.style.display = 'block'; banner.innerHTML = 'Your agents never leave your computer. To see them here, run <code>npm i -g github:DonPedroDado/duck-cubicle &amp;&amp; duck-cubicle install-hooks &amp;&amp; duck-cubicle</code>, restart your Claude Code sessions and allow this site to reach your local network if the browser asks. Or look at a <a href="?demo" style="color:var(--link)">pretend office</a>.'; }
+    }
     setTimeout(poll, DEMO ? 1000 : 2000);
   }
 

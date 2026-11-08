@@ -29,6 +29,17 @@ No dependencies, Node 18+.
 - **Claude Code:** `node bin/duck-cubicle.js install-hooks` adds hooks to `~/.claude/settings.json` (it backs the file up first and leaves your own hooks alone; `uninstall-hooks` removes only ours). Restart your Claude Code sessions. Each session is an agent named after its folder; subagents get their own desk. The hook only records session id, folder, status and a short tool summary in `~/.duck-cubicle/claude-code.json`, and never touches the network.
 - **Any other agent system:** `--source FILE.json` or `--source http://…` with `{ "company": "…", "agents": [{ "id", "name", "role", "status", "task", "error" }] }`. Status is `running`, `waiting`, `idle`, `error` or `paused`.
 
+## Hosted page (dc.ducksoft.ai)
+
+The public site is just static files from `public/` (GitHub Pages, see `.github/workflows/pages.yml`). It holds no agent data. In your browser it reads your own feed from a local bridge on `http://127.0.0.1:3300`, so task text and folder names never leave your computer and nobody else can see them:
+
+```sh
+npm i -g github:DonPedroDado/duck-cubicle
+duck-cubicle install-hooks && duck-cubicle      # restart your Claude Code sessions
+```
+
+Then open the site. The bridge only lets `https://dc.ducksoft.ai` read the feed (change with `--allow-origin`), and only your own browser can change saved appearance; on the hosted page, looks are saved in the browser. Chrome may ask to allow access to your local network, and Safari blocks http requests from https pages, so use Chrome, Edge or Firefox. A different bridge port: `?bridge=4000`.
+
 ## Settings (⚙)
 
 - **Office mood:** 0 Calm, 1 Realistic, 2 Chaos (default), 3 Pub brawl.
