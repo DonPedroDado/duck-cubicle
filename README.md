@@ -31,7 +31,7 @@ No dependencies, Node 18+.
 
 ## Hosted page (dc.ducksoft.ai)
 
-The public site is just static files from `public/` (GitHub Pages, see `.github/workflows/pages.yml`). It holds no agent data. In your browser it reads your own feed from a local bridge on `http://127.0.0.1:3300`, so task text and folder names never leave your computer and nobody else can see them:
+The public site is just static files from `public/` (deployed on Vercel, see `vercel.json`). It holds no agent data. In your browser it reads your own feed from a local bridge on `http://127.0.0.1:3300`, so task text and folder names never leave your computer and nobody else can see them:
 
 ```sh
 npm i -g github:DonPedroDado/duck-cubicle
